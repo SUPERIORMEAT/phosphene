@@ -529,7 +529,10 @@ function govern(rawMs,now){
   if(rawMs>2&&rawMs<200){dtMin=Math.min(dtMin,rawMs);dtEma=dtEma*0.9+rawMs*0.1;}
   if(now-lastSizeCheck>500){lastSizeCheck=now;const dpr=window.devicePixelRatio||1;
     if(Math.abs(W-window.innerWidth*dpr*resScale)>2||Math.abs(H-window.innerHeight*dpr*resScale)>2)rebuild();}
-  const budget=Math.max(dtMin,4);
+  // BUDGET is the ideal frame time, not the best we have managed. Using the observed
+  // minimum meant that on a display we never hit 60 on, the governor treated the slow
+  // rate as the target and never scaled down. Cap it at 60 fps, but honour a faster panel.
+  const budget=Math.min(Math.max(dtMin,4),16.7);
   const lock=$('lockRes').checked;
   if(now-lastChange<1500)return;
   if(!lock&&dtEma>budget*1.55&&resScale>MIN_SCALE){resScale=Math.max(MIN_SCALE,resScale*0.85);lastChange=now;goodSince=now;rebuild();return;}
