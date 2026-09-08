@@ -8,7 +8,7 @@ tracker locks the pulse and flips the spin every bar. Build, drop and breakdown 
 from sixteen seconds of energy history. Nothing strobes.
 
 **Seven modes** — Afterimage, Haze, Bloom, Lattice, Hyperspace, Aurora, Event Horizon.
-**Ten dials** — depth, drift, react, bass, spiral, zoom, twist, bulge, ripple, model.
+**Seven dials** — depth, drift, react, bass, spiral, zoom, model.
 **Shapes** — the field folds onto a circle, triangle, square, pentagon, hexagon, star or flower.
 **A 3D deformer** — it opens on the accretion "a", built as real geometry from the logo's own
 vector measurements. The mesh is drawn off screen every frame and the field is refracted
