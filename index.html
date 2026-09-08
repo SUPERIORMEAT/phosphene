@@ -61,6 +61,9 @@
   .modes .row button:last-child{border-right:0}
   .modes .row button.on{background:var(--cyan2)}
   .modes .row button.afterimage{color:var(--amber)}
+  .modes .row.shapes{background:rgba(11,14,19,.7)}
+  .modes .row.shapes button{padding:5px 10px;font-size:7px;color:var(--dim)}
+  .modes .row.shapes button.on{background:rgba(143,211,255,.12);color:var(--cyan)}
   .modes .row button.afterimage.on{background:var(--amber2)}
   .modes .row button.afterimage.on::after{background:var(--amber);box-shadow:0 0 8px var(--amber)}
   .modes .note{font-family:var(--cockpit);font-size:12.5px;line-height:1.5;text-align:center;max-width:56ch;text-wrap:balance;color:var(--ink);padding:6px 12px;background:rgba(5,6,8,.6);border-left:2px solid var(--cyan);opacity:0;transition:opacity .8s}
@@ -141,6 +144,7 @@
 
 <nav class="modes" id="modes">
   <div class="row" id="modeRow"></div>
+  <div class="row shapes" id="shapeRow"></div>
   <div class="note" id="modeNote"></div>
 </nav>
 
@@ -158,6 +162,7 @@
     <button id="tabBtn" title="Take the sound of one Chrome tab, like YouTube or the Spotify web player">A browser tab</button>
     <button id="midiBtn" title="Your drum kit or controller over MIDI. Kick, snare and hats hit exactly.">MIDI</button>
     <input type="file" id="file" accept="audio/*" hidden>
+    <input type="file" id="meshFile" accept=".obj,.stl,.OBJ,.STL" hidden>
   </div>
   <div class="group">
     <button id="playBtn" disabled>Play</button>
@@ -169,8 +174,14 @@
     <label class="knob">drift <input type="range" id="drift" min="0" max="100" value="40"></label>
     <label class="knob">react <input type="range" id="react" min="0" max="100" value="75"></label>
     <label class="knob">bass <input type="range" id="bassWarp" min="0" max="100" value="60"></label>
+  </div>
+  <div class="group">
     <label class="knob">spiral <input type="range" id="spiral" min="0" max="100" value="0"></label>
     <label class="knob">zoom <input type="range" id="zoom" min="0" max="100" value="25"></label>
+    <label class="knob">twist <input type="range" id="twist" min="-100" max="100" value="0"></label>
+    <label class="knob">bulge <input type="range" id="bulge" min="-100" max="100" value="0"></label>
+    <label class="knob">ripple <input type="range" id="rippleD" min="-100" max="100" value="0"></label>
+    <label class="knob">model <input type="range" id="modelAmt" min="0" max="100" value="62"></label>
   </div>
   <div class="group">
     <button id="fsBtn">Fullscreen</button>
@@ -187,6 +198,9 @@
   <p><b>It hears deep.</b> Two analysers run at once: one long window for the key and a 256-band spectrum, one short window for hits. Each ring of the field is a frequency band, low in the center and high at the edge. The waveform itself traces the mirror edges. Stereo balance tilts the field. A beat tracker makes the whole field swell on the pulse.</p>
   <p><b>Key is color.</b> The field finds the song's key and turns it into a hue on the circle of fifths. C is red. G is orange. D is yellow. A is green. E is cyan. B is blue. F♯ is violet. Some modes bend this toward their own palette.</p>
   <p><b>Modes.</b> Each one is a different visual world: mirror count, palette, trail length, melt, tunnel pull and detail. <b>Afterimage</b> uses a real illusion of the eye, so it works with no music at all. The other six each take the same song somewhere different.</p>
+  <p><b>A 3D file.</b> Press <b>Load 3D</b> in the shape row and choose an <b>.obj</b> or <b>.stl</b>. The mesh is drawn off screen every frame, and the field is refracted through its surface: the model's normals push the picture sideways and its depth swells or sinks it, so the kaleidoscope behaves as though it were lit through a glass version of your object. The model turns on its own and the bass drives how hard it bites. <b>Scroll to dolly</b>: the camera physically moves toward the object, so the perspective opens up as you get close, the way a dolly does. It is not a zoom, and the focal length never changes. <b>Torus</b> is built in, to see the effect without a file.</p>
+  <p><b>Shape.</b> The row under the modes folds the whole field onto a polygon or a star instead of a circle. It changes the geometry everything else is built on, so a square field and a round one read as different instruments.</p>
+  <p><b>Deformers.</b> <b>Twist</b> rotates the field more the further out you go. <b>Bulge</b> swells the centre, or pinches it when you pull left of zero. <b>Ripple</b> runs concentric waves outward. All three sit at zero in the middle and take the music with them: the kick drives bulge, the bass drives twist and ripple.</p>
   <p><b>Depth</b> sets how long the trails hold. <b>Drift</b> sets how fast the field turns. <b>React</b> sets how hard the music moves the image: rings, edges, kicks, spin. <b>Bass</b> sets how far the low end bends the deep background: the trails and the far layer bend most, the front pattern less. <b>Spiral</b> twists the field into a vortex and draws it down into the center. Higher is faster. <b>Zoom</b> is the endless fall: the pattern is drawn in log-polar space, so the dive into the center never ends and never blurs.</p>
   <p><b>It follows the song.</b> A build, a drop and a breakdown are detected from the energy of the last sixteen seconds. On the drop the mirrors double, the spiral jumps and the color flips to its complement for a bar. Every eighth bar, time slows for two beats. Tonal passages flow, noisy ones fracture. The melody travels down the tunnel as a glowing thread. Old shapes fade into their complementary color, like real afterimages. A living skin, a reaction-diffusion system, breeds under the geometry with the bass and mids. Wide stereo pulls the two halves apart. Kicks split the colors for an instant.</p>
   <p><b>Hands.</b> The picture leans toward the cursor. Click to drop a ripple there. Hold the button to open a gravity well that pulls the field in. Drag sideways to spin, drag up and down to dive or back out. Scroll to dive faster or reverse. Pinch, or hold <kbd>ctrl</kbd> while scrolling, to add or remove mirrors. Double-click for fullscreen. The console is never affected.</p>
@@ -226,6 +240,9 @@ const MODES = {
 };
 const ANCHOR = {symLo:8,symHi:8,hueLock:1,hueBias:.075,sat:.9,contrast:.9,decay:.93,inj:.10,warp:.3,detail:4,pull:.002,rot:.0008,hueCycle:0,sparkle:0,rings:.2,wave:0,fract:0,fix:0,bokeh:.3,desat:0,rip:0,flow:.2,skin:.15,after:.1};
 const PKEYS=Object.keys(ANCHOR);
+const SHAPES=[{k:'circle',label:'Circle',sides:0,star:0},{k:'tri',label:'Triangle',sides:3,star:0},{k:'square',label:'Square',sides:4,star:0},{k:'penta',label:'Pentagon',sides:5,star:0},{k:'hex',label:'Hexagon',sides:6,star:0},{k:'star',label:'Star',sides:5,star:.85},{k:'flower',label:'Flower',sides:6,star:-.55},{k:'a',label:'accretion a',sides:0,star:0,mesh:'a'},{k:'knot',label:'Knot',sides:0,star:0,mesh:'knot'},{k:'load',label:'Load 3D',sides:0,star:0,load:true}];
+let shapeName='circle';
+const DEFAULT_SHAPE='a';
 const ORDER=['afterimage','haze','bloom','lattice','hyperspace','aurora','horizon'];
 let modeName='lattice';
 const P={};for(const k of PKEYS)P[k]=MODES.lattice[k];
@@ -247,12 +264,17 @@ uniform vec2 uMouse;
 uniform vec2 uRes;
 uniform float uFlow;
 uniform float uSub,uBass,uMid,uHigh,uAir,uLoud,uBeat,uPan,uPunch,uSpin,uReact,uSnare,uHat,uEvo,uDir,uBassWarp,uSpiral,uSpiralPhase;
+uniform float uSides,uStar,uTwist,uBulge,uRippleD;
+uniform sampler2D uModel;
+uniform float uModelAmt;
 uniform float uHue,uSym,uCentroid,uAnchor,uBreath,uDepth,uDrift;
 uniform float uSat,uContrast,uDecay,uInj,uWarp,uDetail,uPull,uRot,uHueCycle,uSparkle,uRings,uWave,uFract,uFix,uBokeh,uDesat,uRip;
 uniform vec4 uRipples[8];
 #define PI 3.14159265359
 mat2 rot(float a){float c=cos(a),s=sin(a);return mat2(c,-s,s,c);}
 float hash(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
+// radius of a regular n-gon at angle a, inradius 1. Dividing by it bends circles into polygons.
+float polyR(float a,float n){float seg=6.28318530718/n;float h=seg*.5;return cos(h)/max(cos(mod(a,seg)-h),.2);}
 float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
   return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}
 float fbm(vec2 p,float oct){float v=0.,a=.5;mat2 m=rot(.7)*2.03;
@@ -290,6 +312,30 @@ void main(){
   p+=bw*bassAmt*.4;
   p*=1.+.16*uBass*uReact*uBassWarp*sin(r*5.5-t*1.8);
   if(uSpiral>0.){p=rot(uSpiral*2.2*log(r+.06)+uSpiralPhase)*p;}
+  // ---- shape: fold the field onto a polygon or star instead of a circle ----
+  float rr=length(p), aa=atan(p.y,p.x);
+  if(uSides>2.5){
+    float sa=aa+uSpin*.3;
+    float Rp=polyR(sa,uSides)*(1.-uStar*.45*cos(uSides*sa));
+    p/=max(Rp,.3);
+    rr=length(p);
+  }
+  // ---- 3D model: refract the field through the mesh's surface ----
+  if(uModelAmt>.001){
+    vec4 md=texture(uModel,gl_FragCoord.xy/uRes);
+    if(md.a>.01){
+      vec2 nrm=md.rg*2.-1.;
+      float dep=md.b*2.-1.;
+      float amt=uModelAmt*(.7+.9*uBass*uReact);
+      p+=nrm*amt*.45*md.a;
+      p*=1.-amt*.28*dep*md.a;
+      rr=length(p);
+    }
+  }
+  // ---- deformers ----
+  if(abs(uTwist)>.001) p=rot(uTwist*2.4*rr*(1.+.9*uBass*uReact))*p;
+  if(abs(uBulge)>.001) p*=1.+uBulge*(.9+.8*uPunch*uReact)*exp(-rr*rr*2.6);
+  if(abs(uRippleD)>.001) p*=1.+uRippleD*.26*sin(rr*13.-t*2.2+3.*uBass*uReact);
   // kaleidoscope, fractional symmetry blend, fractal second fold
   float u;
   vec2 k=fold(p,uSym,uSpin,u);
@@ -437,7 +483,8 @@ function program(fs){const p=gl.createProgram();gl.attachShader(p,compile(gl.VER
   for(let i=0;i<n;i++){const info=gl.getActiveUniform(p,i);u[info.name.replace(/\[0\]$/,'')]=gl.getUniformLocation(p,info.name);}
   return {p,u};}
 const field=program(FIELD), show=program(SHOW), meter=program(METER), rdProg=program(RD);
-gl.bindVertexArray(gl.createVertexArray());
+const quadVao=gl.createVertexArray();
+gl.bindVertexArray(quadVao);
 
 // spectrum texture: row 0 = 256 log bands, row 1 = waveform
 const SPEC_N=256;
@@ -486,6 +533,274 @@ function measure(tex,dt){
     const target=Math.min(1.6,Math.max(.2,.38/Math.max(mean,.02)));
     exposure+=(target-exposure)*Math.min(1,dt*(target<exposure?2.2:1.2));
   }
+}
+
+// ---------------- 3D model deformer ----------------
+// A mesh is drawn off screen every frame into a normal+depth buffer. The field shader
+// samples that buffer and refracts through it, so the picture bends around the object.
+const MODEL_VS=`#version 300 es
+in vec3 aPos; in vec3 aNor;
+uniform mat3 uRot; uniform float uScale; uniform vec2 uAsp;
+uniform float uDolly;            // camera distance. Moving it is a dolly, not a zoom.
+out vec3 vN; out float vZ;
+void main(){
+  vec3 q=uRot*aPos*uScale;
+  vZ=q.z/max(uScale,1e-4);       // object depth, independent of the camera
+  q.z-=uDolly;                   // camera sits at the origin looking down -Z
+  const float n=.05, f=30., foc=2.414;   // 45 degree field of view
+  float w=-q.z;
+  float zc=((f+n)/(n-f))*q.z+(2.*f*n)/(n-f);
+  gl_Position=vec4(q.x*foc*uAsp.x, q.y*foc*uAsp.y, zc, w);
+  vN=normalize(uRot*aNor);
+}`;
+const MODEL_FS=`#version 300 es
+precision highp float;
+in vec3 vN; in float vZ; out vec4 o;
+void main(){ o=vec4(vN.xy*.5+.5, clamp(vZ*.5+.5,0.,1.), 1.); }`;
+function programVF(vsSrc,fsSrc){
+  const pr=gl.createProgram();
+  gl.attachShader(pr,compile(gl.VERTEX_SHADER,vsSrc));
+  gl.attachShader(pr,compile(gl.FRAGMENT_SHADER,fsSrc));
+  gl.bindAttribLocation(pr,0,'aPos'); gl.bindAttribLocation(pr,1,'aNor');
+  gl.linkProgram(pr);
+  if(!gl.getProgramParameter(pr,gl.LINK_STATUS)){console.error(gl.getProgramInfoLog(pr));throw new Error('model link');}
+  const u={};const n=gl.getProgramParameter(pr,gl.ACTIVE_UNIFORMS);
+  for(let i=0;i<n;i++){const info=gl.getActiveUniform(pr,i);u[info.name.replace(/\[0\]$/,'')]=gl.getUniformLocation(pr,info.name);}
+  return {p:pr,u};
+}
+const modelProg=programVF(MODEL_VS,MODEL_FS);
+
+let modelVao=null,modelVbo=null,modelIbo=null,modelCount=0,hasModel=false,modelName='';
+let mFbo=null,mTex=null,mDepth=null,mW=0,mH=0;
+let mrx=0,mry=0,dolly=3.2,dollyTarget=3.2;
+
+function modelTargets(){
+  const w=Math.max(64,Math.min(1024,Math.round(W*0.42))), h=Math.max(64,Math.round(H*0.42));
+  if(w===mW&&h===mH&&mFbo)return;
+  if(mTex){gl.deleteTexture(mTex);gl.deleteFramebuffer(mFbo);gl.deleteRenderbuffer(mDepth);}
+  mW=w;mH=h;
+  mTex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,mTex);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA8,w,h,0,gl.RGBA,gl.UNSIGNED_BYTE,null);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+  mDepth=gl.createRenderbuffer();gl.bindRenderbuffer(gl.RENDERBUFFER,mDepth);
+  gl.renderbufferStorage(gl.RENDERBUFFER,gl.DEPTH_COMPONENT16,w,h);
+  mFbo=gl.createFramebuffer();gl.bindFramebuffer(gl.FRAMEBUFFER,mFbo);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,mTex,0);
+  gl.framebufferRenderbuffer(gl.FRAMEBUFFER,gl.DEPTH_ATTACHMENT,gl.RENDERBUFFER,mDepth);
+  gl.bindFramebuffer(gl.FRAMEBUFFER,null);
+}
+
+// ---- mesh building ----
+function meshTorus(R,r,seg,ring){
+  const pos=[],nor=[],idx=[];
+  for(let i=0;i<=seg;i++){const u=i/seg*Math.PI*2,cu=Math.cos(u),su=Math.sin(u);
+    for(let j=0;j<=ring;j++){const v=j/ring*Math.PI*2,cv=Math.cos(v),sv=Math.sin(v);
+      pos.push((R+r*cv)*cu,(R+r*cv)*su,r*sv);
+      nor.push(cv*cu,cv*su,sv);}}
+  for(let i=0;i<seg;i++)for(let j=0;j<ring;j++){
+    const a=i*(ring+1)+j,b=a+ring+1;
+    idx.push(a,b,a+1,b,b+1,a+1);}
+  return {pos,nor,idx};
+}
+function meshSphere(r,seg){
+  const pos=[],nor=[],idx=[];
+  for(let i=0;i<=seg;i++){const th=i/seg*Math.PI,st=Math.sin(th),ct=Math.cos(th);
+    for(let j=0;j<=seg*2;j++){const ph=j/(seg*2)*Math.PI*2;
+      const x=st*Math.cos(ph),y=st*Math.sin(ph),z=ct;
+      pos.push(x*r,y*r,z*r);nor.push(x,y,z);}}
+  const W2=seg*2+1;
+  for(let i=0;i<seg;i++)for(let j=0;j<seg*2;j++){
+    const a=i*W2+j,b=a+W2;idx.push(a,b,a+1,b,b+1,a+1);}
+  return {pos,nor,idx};
+}
+function meshBox(w,h,d){
+  const hx=w/2,hy=h/2,hz=d/2,pos=[],nor=[],idx=[];
+  const faces=[[[1,0,0],[hx,-hy,-hz],[hx,hy,-hz],[hx,hy,hz],[hx,-hy,hz]],
+               [[-1,0,0],[-hx,-hy,hz],[-hx,hy,hz],[-hx,hy,-hz],[-hx,-hy,-hz]],
+               [[0,1,0],[-hx,hy,-hz],[-hx,hy,hz],[hx,hy,hz],[hx,hy,-hz]],
+               [[0,-1,0],[-hx,-hy,hz],[-hx,-hy,-hz],[hx,-hy,-hz],[hx,-hy,hz]],
+               [[0,0,1],[-hx,-hy,hz],[hx,-hy,hz],[hx,hy,hz],[-hx,hy,hz]],
+               [[0,0,-1],[hx,-hy,-hz],[-hx,-hy,-hz],[-hx,hy,-hz],[hx,hy,-hz]]];
+  for(const f of faces){const n=f[0],base=pos.length/3;
+    for(let k=1;k<=4;k++){pos.push(f[k][0],f[k][1],f[k][2]);nor.push(n[0],n[1],n[2]);}
+    idx.push(base,base+1,base+2,base,base+2,base+3);}
+  return {pos,nor,idx};
+}
+function meshTransform(m,tx,ty,tz,sx){
+  const s=sx===undefined?1:sx;
+  for(let i=0;i<m.pos.length;i+=3){m.pos[i]=m.pos[i]*s+tx;m.pos[i+1]=m.pos[i+1]*s+ty;m.pos[i+2]=m.pos[i+2]*s+tz;}
+  return m;
+}
+function meshMerge(list){
+  const pos=[],nor=[],idx=[];
+  for(const m of list){const off=pos.length/3;
+    pos.push(...m.pos);nor.push(...m.nor);for(const i of m.idx)idx.push(i+off);}
+  return {pos,nor,idx};
+}
+// The accretion.tv "a" on its own, taken from the real vector measurements
+// (viewBox 0 0 701 786; y is down in SVG, so it is negated here).
+// Bowl: outer radius 109.38, inner 82.19 x 79.72, centred 325.67 / 328.76.
+// Stem: 30.90 wide by 212.58 tall at x 411.57, y 222.47.
+function meshAccretionA(){
+  const S=1/220, X=v=>(v-329)*S, Y=v=>-(v-328.8)*S;
+  const bowlR=(109.38+82.19)/2, bowlT=(109.38-82.19)/2;   // mean radius and half thickness
+  const stemH=212.58, stemW=30.90;
+  const parts=[
+    meshTransform(meshTorus(bowlR*S, bowlT*S, 128, 16), X(325.67), Y(328.76), 0),
+    meshTransform(meshBox(stemW*S, stemH*S, bowlT*2*S), X(411.57+stemW/2), Y(222.47+stemH/2), 0),
+  ];
+  return meshMerge(parts);
+}
+function meshTorusKnot(){
+  const pos=[],nor=[],idx=[],SEG=220,RING=14,p=2,q=3,tr=.26;
+  const pt=t=>{const r=.7+.32*Math.cos(q*t);return [r*Math.cos(p*t),r*Math.sin(p*t),.32*Math.sin(q*t)];};
+  for(let i=0;i<=SEG;i++){const t=i/SEG*Math.PI*2;
+    const c=pt(t),n1=pt(t+.01);
+    let T=[n1[0]-c[0],n1[1]-c[1],n1[2]-c[2]];
+    const tl=Math.hypot(...T);T=T.map(v=>v/tl);
+    let Nv=[-T[1],T[0],0];const nl=Math.hypot(...Nv)||1;Nv=Nv.map(v=>v/nl);
+    const B=[T[1]*Nv[2]-T[2]*Nv[1],T[2]*Nv[0]-T[0]*Nv[2],T[0]*Nv[1]-T[1]*Nv[0]];
+    for(let j=0;j<=RING;j++){const v=j/RING*Math.PI*2,cv=Math.cos(v),sv=Math.sin(v);
+      const nx=Nv[0]*cv+B[0]*sv,ny=Nv[1]*cv+B[1]*sv,nz=Nv[2]*cv+B[2]*sv;
+      pos.push(c[0]+nx*tr,c[1]+ny*tr,c[2]+nz*tr);nor.push(nx,ny,nz);}}
+  for(let i=0;i<SEG;i++)for(let j=0;j<RING;j++){
+    const a=i*(RING+1)+j,b=a+RING+1;idx.push(a,b,a+1,b,b+1,a+1);}
+  return {pos,nor,idx};
+}
+
+function uploadMesh(m,name){
+  // centre and scale to a unit sphere
+  let mnx=1e9,mny=1e9,mnz=1e9,mxx=-1e9,mxy=-1e9,mxz=-1e9;
+  for(let i=0;i<m.pos.length;i+=3){
+    mnx=Math.min(mnx,m.pos[i]);mxx=Math.max(mxx,m.pos[i]);
+    mny=Math.min(mny,m.pos[i+1]);mxy=Math.max(mxy,m.pos[i+1]);
+    mnz=Math.min(mnz,m.pos[i+2]);mxz=Math.max(mxz,m.pos[i+2]);}
+  const cx=(mnx+mxx)/2,cy=(mny+mxy)/2,cz=(mnz+mxz)/2;
+  const ext=Math.max(mxx-mnx,mxy-mny,mxz-mnz)||1, k=2/ext;
+  const inter=new Float32Array(m.pos.length*2);
+  for(let i=0,j=0;i<m.pos.length;i+=3,j+=6){
+    inter[j]=(m.pos[i]-cx)*k;inter[j+1]=(m.pos[i+1]-cy)*k;inter[j+2]=(m.pos[i+2]-cz)*k;
+    inter[j+3]=m.nor[i];inter[j+4]=m.nor[i+1];inter[j+5]=m.nor[i+2];}
+  if(modelVao)gl.deleteVertexArray(modelVao);
+  if(modelVbo)gl.deleteBuffer(modelVbo);
+  if(modelIbo)gl.deleteBuffer(modelIbo);
+  modelVao=gl.createVertexArray();gl.bindVertexArray(modelVao);
+  modelVbo=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,modelVbo);
+  gl.bufferData(gl.ARRAY_BUFFER,inter,gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,3,gl.FLOAT,false,24,0);
+  gl.enableVertexAttribArray(1);gl.vertexAttribPointer(1,3,gl.FLOAT,false,24,12);
+  const big=(m.pos.length/3)>65535;
+  const arr=big?new Uint32Array(m.idx):new Uint16Array(m.idx);
+  modelIbo=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,modelIbo);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,arr,gl.STATIC_DRAW);
+  modelIdxType=big?gl.UNSIGNED_INT:gl.UNSIGNED_SHORT;
+  modelCount=m.idx.length;hasModel=true;modelName=name||'';
+  gl.bindVertexArray(quadVao);
+  modelTargets();
+}
+let modelIdxType=null;
+
+// ---- file parsing ----
+function parseOBJ(txt){
+  const V=[],VN=[],pos=[],nor=[],idx=[];
+  const lines=txt.split(/\r?\n/);
+  for(const line of lines){
+    if(line.charCodeAt(0)===118){ // 'v'
+      if(line[1]===' '){const a=line.slice(2).trim().split(/\s+/);V.push(+a[0],+a[1],+a[2]);}
+      else if(line[1]==='n'){const a=line.slice(3).trim().split(/\s+/);VN.push(+a[0],+a[1],+a[2]);}
+    } else if(line.charCodeAt(0)===102 && line[1]===' '){ // 'f '
+      const parts=line.slice(2).trim().split(/\s+/);
+      const ref=parts.map(t=>{const c=t.split('/');
+        let vi=parseInt(c[0]);if(vi<0)vi=V.length/3+vi+1;
+        let ni=c[2]?parseInt(c[2]):0;if(ni<0)ni=VN.length/3+ni+1;
+        return [vi,ni];});
+      for(let i=1;i+1<ref.length;i++) faceTri(ref[0],ref[i],ref[i+1]);
+    }
+  }
+  function faceTri(a,b,c){
+    const tri=[a,b,c],P=[];
+    for(const [vi] of tri){P.push(V[(vi-1)*3],V[(vi-1)*3+1],V[(vi-1)*3+2]);}
+    let nx=0,ny=0,nz=0;
+    {const ux=P[3]-P[0],uy=P[4]-P[1],uz=P[5]-P[2],vx=P[6]-P[0],vy=P[7]-P[1],vz=P[8]-P[2];
+     nx=uy*vz-uz*vy;ny=uz*vx-ux*vz;nz=ux*vy-uy*vx;
+     const l=Math.hypot(nx,ny,nz)||1;nx/=l;ny/=l;nz/=l;}
+    tri.forEach(([vi,ni],k)=>{
+      const base=pos.length/3;
+      pos.push(P[k*3],P[k*3+1],P[k*3+2]);
+      if(ni&&VN.length) nor.push(VN[(ni-1)*3],VN[(ni-1)*3+1],VN[(ni-1)*3+2]);
+      else nor.push(nx,ny,nz);
+      idx.push(base);});
+  }
+  return {pos,nor,idx};
+}
+function parseSTL(buf){
+  const dv=new DataView(buf);
+  const asciiHead=new TextDecoder().decode(new Uint8Array(buf,0,Math.min(84,buf.byteLength)));
+  const nTri=buf.byteLength>=84?dv.getUint32(80,true):0;
+  const binary = buf.byteLength===84+nTri*50;
+  const pos=[],nor=[],idx=[];
+  if(binary){
+    for(let i=0;i<nTri;i++){const o=84+i*50;
+      const nx=dv.getFloat32(o,true),ny=dv.getFloat32(o+4,true),nz=dv.getFloat32(o+8,true);
+      for(let k=0;k<3;k++){const q=o+12+k*12;
+        pos.push(dv.getFloat32(q,true),dv.getFloat32(q+4,true),dv.getFloat32(q+8,true));
+        nor.push(nx,ny,nz);idx.push(idx.length);}}
+  } else {
+    const txt=new TextDecoder().decode(new Uint8Array(buf));
+    const re=/facet\s+normal\s+([\-\d.eE+]+)\s+([\-\d.eE+]+)\s+([\-\d.eE+]+)([\s\S]*?)endfacet/g;
+    let m;
+    while((m=re.exec(txt))){
+      const nx=+m[1],ny=+m[2],nz=+m[3];
+      const vs=[...m[4].matchAll(/vertex\s+([\-\d.eE+]+)\s+([\-\d.eE+]+)\s+([\-\d.eE+]+)/g)];
+      for(let k=0;k<3&&k<vs.length;k++){
+        pos.push(+vs[k][1],+vs[k][2],+vs[k][3]);nor.push(nx,ny,nz);idx.push(idx.length);}
+    }
+  }
+  return {pos,nor,idx};
+}
+async function loadMeshFile(file){
+  try{
+    const name=file.name.toLowerCase();
+    let m;
+    if(name.endsWith('.obj')) m=parseOBJ(await file.text());
+    else if(name.endsWith('.stl')) m=parseSTL(await file.arrayBuffer());
+    else { showMsg('Use an .obj or .stl file.',5000); return; }
+    if(!m.idx.length){ showMsg('That file had no triangles in it.',5000); return; }
+    if(m.idx.length>1500000){ showMsg('That mesh is very heavy. Decimate it and try again.',6000); return; }
+    uploadMesh(m,file.name);
+    shapeName='model';shapeRow.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.shape==='load'));
+    showMsg(`${file.name} loaded, ${(m.idx.length/3).toLocaleString()} triangles. Raise the model dial.`,6000);
+  }catch(e){ showMsg('Could not read that mesh.',5000); }
+}
+
+function drawModel(dt,react){
+  dolly+=(dollyTarget-dolly)*Math.min(1,dt*3.5);
+  if(!hasModel||!modelVao)return;
+  modelTargets();
+  mrx+=dt*0.21*(1+0.5*env[2]*react);
+  mry+=dt*0.34*(1+0.9*env[1]*react);
+  const cx=Math.cos(mrx),sx=Math.sin(mrx),cy=Math.cos(mry),sy=Math.sin(mry);
+  // Ry * Rx as a column-major mat3
+  const R=[ cy, sy*sx, -sy*cx,
+            0,  cx,     sx,
+            sy, -cy*sx, cy*cx ];
+  gl.bindFramebuffer(gl.FRAMEBUFFER,mFbo);
+  gl.viewport(0,0,mW,mH);
+  gl.clearColor(.5,.5,.5,0);gl.clearDepth(1);
+  gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);
+  gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+  gl.useProgram(modelProg.p);
+  gl.bindVertexArray(modelVao);
+  gl.uniformMatrix3fv(modelProg.u.uRot,false,R);
+  gl.uniform1f(modelProg.u.uScale,0.62*(1+0.10*env[1]*react));
+  gl.uniform1f(modelProg.u.uDolly,dolly);
+  const asp=mW/mH;
+  gl.uniform2f(modelProg.u.uAsp, asp>=1?1/asp:1, asp>=1?1:asp);
+  gl.drawElements(gl.TRIANGLES,modelCount,modelIdxType,0);
+  gl.disable(gl.DEPTH_TEST);
+  gl.bindVertexArray(quadVao);
+  gl.bindFramebuffer(gl.FRAMEBUFFER,null);
 }
 
 // ---------------- render targets with adaptive resolution ----------------
@@ -796,7 +1111,7 @@ function analyse(dt,now){
 }
 
 // ---------------- state & loop ----------------
-let flow=0,spin=0,dir=1,spiralPhase=0,zoomPhase=0,timeScale=1,sym=6,melTick=0;
+let flow=0,spin=0,dir=1,spiralPhase=0,zoomPhase=0,timeScale=1,sym=6,melTick=0,sides=0,star=0;
 // hands
 const mouse={x:0,y:0,sx:0,sy:0,amt:0,last:-99,down:false,hold:0,dragged:false,px:0,py:0};let zoomVel=0,spinVel=0,symOffset=0;const melPts=[];const melBuf=new Float32Array(48*4);
 let anchor=0,anchorOn=false,anchorSince=0,lastNow=performance.now(),breathPhase=0,dispHue=hue,hudTick=0;
@@ -810,7 +1125,8 @@ function frame(nowMs){
   const dt=Math.min(0.05,rawMs/1000);const now=nowMs/1000;
   govern(rawMs,nowMs);
   analyse(dt,now);
-  const depth=$('depth').value/100,drift=$('drift').value/100,react=0.3+1.4*($('react').value/100),bassWarp=2*($('bassWarp').value/100),spiral=$('spiral').value/100,zoom=$('zoom').value/100;
+  const depth=$('depth').value/100,drift=$('drift').value/100,react=0.3+1.4*($('react').value/100),bassWarp=2*($('bassWarp').value/100),spiral=$('spiral').value/100,zoom=$('zoom').value/100,
+        twist=$('twist').value/100,bulge=$('bulge').value/100,rippleD=$('rippleD').value/100,modelAmt=$('modelAmt').value/100;
   // preset smoothing, anchor blend
   anchor+=((anchorOn?1:0)-anchor)*Math.min(1,dt*0.8);
   const M=MODES[modeName];const k=Math.min(1,dt*0.9);
@@ -836,6 +1152,9 @@ function frame(nowMs){
   for(let i=melPts.length-1;i>=0;i--){const m=melPts[i];m.age+=dts/3.2;m.r-=dts*0.16*(0.5+zoom+spiral);m.a+=dts*(0.35+1.6*spiral)*dir;if(m.age>1||m.r<0.02)melPts.splice(i,1);}
   melBuf.fill(0);for(let i=0;i<melPts.length;i++){const m=melPts[i];melBuf[i*4]=Math.cos(m.a)*m.r;melBuf[i*4+1]=Math.sin(m.a)*m.r;melBuf[i*4+2]=m.age;melBuf[i*4+3]=m.h;}
   const dirT=(period>0&&beatConf>0.15)?((Math.floor(beatCount/4)%2)?-1:1):1;dir+=(dirT-dir)*Math.min(1,dt*1.2);
+  const SH=SHAPES.find(x=>x.k===shapeName)||SHAPES[0];
+  sides+=((anchorOn?0:SH.sides)-sides)*Math.min(1,dt*2.2);
+  star+=((anchorOn?0:SH.star)-star)*Math.min(1,dt*2.2);
   const evo=0.5-0.5*Math.cos(now*2*Math.PI/47);
   spiralPhase+=dts*spiral*(1.2+1.5*env[1]*react+1.5*drop)*(1-0.7*anchor);
   spin+=dts*dir*(0.08+(0.5*env[3]+0.2*env[2])*react*(0.3+drift))*(1-0.7*anchor);
@@ -845,6 +1164,7 @@ function frame(nowMs){
   for(let i=ripples.length-1;i>=0;i--){ripples[i].age+=dts;if(ripples[i].age>3.2)ripples.splice(i,1);}
   ripBuf.fill(0);for(let i=0;i<ripples.length;i++){const R=ripples[i];ripBuf[i*4]=R.x;ripBuf[i*4+1]=R.y;ripBuf[i*4+2]=R.age;ripBuf[i*4+3]=R.s;}
 
+  drawModel(dt,react);
   rdStep(0.03+0.018*env[1]*react,0.058+0.006*env[2],now,ripBuf);
   const src=targets[cur],dst=targets[1-cur];
   gl.useProgram(field.p);
@@ -852,10 +1172,14 @@ function frame(nowMs){
   gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,src.tex);
   gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,specTex);
   gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,rdT[rdCur].tex);
+  gl.activeTexture(gl.TEXTURE3);gl.bindTexture(gl.TEXTURE_2D,mTex||specTex);
   const u=field.u;
-  gl.uniform1i(u.uPrev,0);gl.uniform1i(u.uSpec,1);gl.uniform1i(u.uRD,2);gl.uniform2f(u.uRes,W,H);gl.uniform1f(u.uFlow,flow);
+  gl.uniform1i(u.uPrev,0);gl.uniform1i(u.uSpec,1);gl.uniform1i(u.uRD,2);gl.uniform1i(u.uModel,3);gl.uniform2f(u.uRes,W,H);gl.uniform1f(u.uFlow,flow);
   gl.uniform1f(u.uSub,env[0]);gl.uniform1f(u.uBass,env[1]);gl.uniform1f(u.uMid,env[2]);gl.uniform1f(u.uHigh,env[3]);gl.uniform1f(u.uAir,env[4]);
   gl.uniform1f(u.uLoud,loud);gl.uniform1f(u.uBeat,beat);gl.uniform1f(u.uPan,pan);gl.uniform1f(u.uPunch,punch*(1-anchor));gl.uniform1f(u.uSpin,spin);gl.uniform1f(u.uReact,react*(1-0.7*anchor));gl.uniform1f(u.uSnare,snare*(1-anchor));gl.uniform1f(u.uHat,hat*(1-anchor));gl.uniform1f(u.uEvo,evo);gl.uniform1f(u.uDir,dir);gl.uniform1f(u.uBassWarp,bassWarp*(1-0.6*anchor));gl.uniform1f(u.uSpiral,spiral*(1-0.7*anchor));gl.uniform1f(u.uSpiralPhase,spiralPhase);
+  gl.uniform1f(u.uSides,sides);gl.uniform1f(u.uStar,star);
+  gl.uniform1f(u.uModelAmt,hasModel?modelAmt*(1-anchor):0);
+  gl.uniform1f(u.uTwist,twist*(1-anchor));gl.uniform1f(u.uBulge,bulge*(1-anchor));gl.uniform1f(u.uRippleD,rippleD*(1-anchor));
   gl.uniform1f(u.uDrop,drop*(1-anchor));gl.uniform1f(u.uSparse,sparse);gl.uniform1f(u.uNoisy,noisy*(1-anchor));gl.uniform1f(u.uZoomPhase,zoomPhase);gl.uniform1f(u.uZoom,zoom*(1-0.6*anchor));
   gl.uniform1f(u.uSkin,P.skin*(0.5+0.5*react));gl.uniform1f(u.uAfter,P.after*(1-anchor));gl.uniform1f(u.uStereo,stereoW);gl.uniform1f(u.uSlow,timeScale);gl.uniform1f(u.uMelody,1-anchor);
   gl.uniform4fv(u.uMel,melBuf);gl.uniform1i(u.uMelN,melPts.length);
@@ -908,6 +1232,19 @@ function setModeName(name,quiet){modeName=name;
   modeRow.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.mode===name));
   if(quiet)return;const n=$('modeNote');n.textContent=MODES[name].note;n.classList.add('show');clearTimeout(noteT);noteT=setTimeout(()=>n.classList.remove('show'),name==='afterimage'?14000:7000);}
 setModeName('lattice',true);
+const shapeRow=$('shapeRow');
+SHAPES.forEach(sp=>{const b=document.createElement('button');b.textContent=sp.label;b.dataset.shape=sp.k;
+  b.title=`Fold the field onto a ${sp.label.toLowerCase()}`;b.onclick=()=>setShape(sp.k);shapeRow.appendChild(b);});
+function setShape(k){
+  const sp=SHAPES.find(x=>x.k===k);
+  if(sp&&sp.load){ $('meshFile').click(); return; }
+  if(sp&&sp.mesh){ uploadMesh(sp.mesh==='a'?meshAccretionA():meshTorusKnot(), sp.label); }
+  else if(k!=='model'){ hasModel=false; }
+  shapeName=k;
+  shapeRow.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.shape===k));
+}
+$('meshFile').onchange=e=>{const f=e.target.files[0];if(f)loadMeshFile(f);e.target.value='';};
+setShape(DEFAULT_SHAPE);
 function setAnchor(on){anchorOn=on;if(on)anchorSince=performance.now()/1000;
   $('anchorBtn').textContent=on?'Return':'Anchor';$('anchorBtn').classList.toggle('on',on);$('anchorText').classList.toggle('show',on);}
 $('anchorBtn').onclick=()=>setAnchor(!anchorOn);
@@ -943,13 +1280,26 @@ canvas.addEventListener('pointercancel',()=>{mouse.down=false;});
 canvas.addEventListener('dblclick',e=>{e.preventDefault();$('fsBtn').click();});
 canvas.addEventListener('wheel',e=>{e.preventDefault();mouse.last=performance.now()/1000;
   if(e.ctrlKey||e.metaKey){symOffset=Math.max(-6,Math.min(8,symOffset-e.deltaY*0.02));return;}
+  if(hasModel){ dollyTarget=Math.max(1.05,Math.min(9,dollyTarget+e.deltaY*0.0035)); spinVel+=e.deltaX*0.004; return; }
   zoomVel+=e.deltaY*0.012;spinVel+=e.deltaX*0.004;},{passive:false});
 canvas.addEventListener('contextmenu',e=>e.preventDefault());
 let idleT;function wake(){document.body.classList.remove('idle');clearTimeout(idleT);idleT=setTimeout(()=>document.body.classList.add('idle'),3800);}
 ['mousemove','pointerdown','touchstart'].forEach(ev=>window.addEventListener(ev,wake,{passive:true}));wake();
 
 window.PHOSPHENE={loadArrayBuffer:async ab=>{ensureCtx();buffer=await ctx.decodeAudioData(ab);duration=buffer.duration;offset=0;setMode('file');$('playBtn').disabled=false;play();},
-  setMode:setModeName,get state(){return{mode,modeName,playing,exposure,punch,snare,hat,beatCount,drop,flip,sparse,building,noisy,stereoW,timeScale,mel:melPts.length,melOk,melHue,lastDrop,sectionName,midiOn,hue,keyPc,keyConf,bpm,beatConf,env:Array.from(env),centroid,sym,pan,ripples:ripples.length,W,H,resScale,fps:1000/dtEma};}};
+  setMode:setModeName,setShape:(k)=>setShape(k),
+  // debug: read the model's coverage mask back as a small grid
+  readModelMask:(cols)=>{cols=cols||56;if(!hasModel||!mFbo)return null;
+    const px=new Uint8Array(mW*mH*4);gl.bindFramebuffer(gl.FRAMEBUFFER,mFbo);
+    gl.readPixels(0,0,mW,mH,gl.RGBA,gl.UNSIGNED_BYTE,px);gl.bindFramebuffer(gl.FRAMEBUFFER,null);
+    const rows=Math.max(8,Math.round(cols*mH/mW/2));const out=[];
+    for(let r=0;r<rows;r++){let line='';
+      for(let c=0;c<cols;c++){
+        const x=Math.floor((c+.5)/cols*mW), y=Math.floor((1-(r+.5)/rows)*mH);
+        line+= px[(y*mW+x)*4+3]>127 ? '#' : '.';}
+      out.push(line);}
+    return out.join('\n');},
+  get state(){return{mode,modeName,shapeName,sides,star,hasModel,modelName,modelTris:modelCount/3,dolly,playing,exposure,punch,snare,hat,beatCount,drop,flip,sparse,building,noisy,stereoW,timeScale,mel:melPts.length,melOk,melHue,lastDrop,sectionName,midiOn,hue,keyPc,keyConf,bpm,beatConf,env:Array.from(env),centroid,sym,pan,ripples:ripples.length,W,H,resScale,fps:1000/dtEma};}};
 requestAnimationFrame(frame);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)requestAnimationFrame(()=>{});});
 })();
